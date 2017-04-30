@@ -1,4 +1,4 @@
-#![Awesome Adb](./assets/title.png)
+# ![Awesome Adb](./assets/title.png)
 
 The [Android Debug Bridge](https://developer.android.com/studio/command-line/adb.html) (ADB) is a toolkit included in the Android SDK package, it is not only a powerful tool for Android developers and testers, but also a good toy for Android fans.
 
@@ -8,7 +8,7 @@ This repository renews continually, Pull Requests and Issues are welcomed. If yo
 
 Other languages: [:cn: Chinese](./README.md)
 
-#![Table of Contents](./assets/toc.png)
+# ![Table of Contents](./assets/toc.png)
 
 <!-- vim-markdown-toc GFM -->
 * [Basic Usage](#basic-usage)
@@ -35,13 +35,13 @@ Other languages: [:cn: Chinese](./README.md)
     * [View Reception Activity](#view-reception-activity)
     * [View Running Services](#view-running-services)
 * [Interact with Applications](#interact-with-applications)
-    * [Transferred from Activity](#transferred-from-activity)
-    * [Transferred from the Service](#transferred-from-the-service)
-    * [Transmits broadcast](#transmits-broadcast)
-    * [Forcibly stop the application](#forcibly-stop-the-application)
+    * [Start an Activity](#start-an-activity)
+    * [Start a Service](#start-a-service)
+    * [Send a broadcast](#send-a-broadcast)
+    * [Force stop an application](#force-stop-an-application)
 * [File Management](#file-management)
-    * [Copy files to the computer equipment in](#copy-files-to-the-computer-equipment-in)
-    * [Copy computer files to the device](#copy-computer-files-to-the-device)
+    * [Copy files from a device to a computer](#copy-files-from-a-device-to-a-computer)
+    * [Copy files from a computer to a device](#copy-files-from-a-computer-to-a-device)
 * [Analog Keys / inputs](#analog-keys--inputs)
     * [Power button](#power-button)
     * [menu](#menu)
@@ -379,6 +379,20 @@ Since we want to achieve a wireless connection, it can all step down are wireles
 
    If you can see `connected to <device-ip-address>: 5555` such output indicates a successful connection.
 
+* Notice: *
+   Some device may not working unless you restart adbd service, so you need to run command on the device's terminal as below
+
+   ```sh
+   restart adbd
+   ```
+
+   if `restart` is not working, try following command:
+
+   ```sh
+   start adbd
+   stop adbd
+   ```
+
 ## Application Management
 
 ### Check the list of
@@ -642,26 +656,30 @@ Complete packagename is unnecessary. For example, `adb shell dumpsys activity se
 
 ## Interact with Applications
 
-Primarily using `am <command>` command commonly used `<command>` as follows:
+The most used syntax for interacting with applications is : 
+```sh
+am <command>
+```
+The common commands for `<command>` are as follow:
 
-| Command                           | use                                    |
-|-----------------------------------|----------------------------------------|
-| `Start [options] <INTENT>`        | Start `<INTENT>` specified Activity    |
-| `Startservice [options] <INTENT>` | Start `<INTENT>` designated Service    |
-| `Broadcast [options] <INTENT>`    | Send `<INTENT>` designated broadcast   |
-| `Force-stop <packagename>`        | stop `<packagename>` related processes |
+| Command                           | Use                                                  |
+|-----------------------------------|------------------------------------------------------|
+| `start [options] <INTENT>`        | Start an Activity specified by `<INTENT>`            |
+| `startservice [options] <INTENT>` | Start the Service specified by `<INTENT>`            |
+| `broadcast [options] <INTENT>`    | Send a broadcast `<INTENT>`                         |
+| `force-stop <packagename>`        | Force stop everything associated with `<packagename>`|
 
-`<INTENT>` very flexible parameters, and write Android program code corresponding to the Intent.
+The `<INTENT>` is a flexible parameter which is corresponding to the Intent writing in the application.
 
-Options for determining intent objects as follows:
+The options for `<INTENT>` are as follows:
 
 | Parameter        | Meaning                                                                                                                               |
 |------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `-a <ACTION>`    | specified action, such as `android.intent.action.VIEW`                                                                                |
-| `-c <CATEGORY>`  | specify a category, such as `android.intent.category.APP_CONTACTS`                                                                    |
-| `-n <COMPONENT>` | specify the full component name, which is used to explicitly specify the start Activity, such as `com.example.app / .ExampleActivity` |
+| `-a <ACTION>`    | Specify the intent action, such as `android.intent.action.VIEW`. You can declare this only once.                                                                                |
+| `-c <CATEGORY>`  | Specify an intent category, such as `android.intent.category.APP_CONTACTS`                                                                    |
+| `-n <COMPONENT>` | Specify the component name with package name prefix to create an explicit intent, such as `com.example.app/.ExampleActivity` |
 
-`<INTENT>` can bring in data, like Bundle write code like:
+There are some options addting data for `<INTENT>`, similar to `extra` for Bundle:
 
 | Parameter                                                        | Meaning                                |
 |------------------------------------------------------------------|----------------------------------------|
@@ -676,148 +694,152 @@ Options for determining intent objects as follows:
 | `--eia <EXTRA_KEY> <EXTRA_INT_VALUE> [, <EXTRA_INT_VALUE ...]`   | integer array                          |
 | `--ela <EXTRA_KEY> <EXTRA_LONG_VALUE> [, <EXTRA_LONG_VALUE ...]` | long array                             |
 
-### Transferred from Activity
+### Start an Activity
 
-Format:
+The syntax is:
 
 ```sh
 adb shell am start [options] <INTENT>
 ```
 
-E.g:
+For example:
 
 ```sh
 adb shell am start -n com.tencent.mm/.ui.LauncherUI
 ```
 
-It represents transfer from the micro-channel main interface.
+The command above means starting the launch activity of WeChat.
 
 ```sh
 adb shell am start -n org.mazhuang.boottimemeasure/.MainActivity --es "toast" "hello, world"
 ```
 
-Expressed from the transfer `org.mazhuang.boottimemeasure / .MainActivity` key data string and pass it to` toast - hello, world`.
+The command above means starting MainActivity of the application with the package name `org.mazhuang.boottimemeasure` with an extra string information (key is 'toast' and value is 'hello, world').
 
-### Transferred from the Service
+### Start a Service
 
-Format:
+The syntax is:
 
 ```sh
 adb shell am startservice [options] <INTENT>
 ```
 
-E.g:
+For example:
 
 ```sh
 adb shell am startservice -n com.tencent.mm/.plugin.accountsync.model.AccountAuthenticatorService
 ```
 
-Service represents a transfer from micro-letter.
+The command above means starting a service from WeChat.
 
-### Transmits broadcast
+### Send a broadcast
 
-Format:
+The syntax is:
 
 ```sh
 adb shell am broadcast [options] <INTENT>
 ```
 
-All components can be broadcast to be broadcast only to the specified component.
+Broadcast intent can be sent to all components or a specified component.
 
-For example, all of the components to broadcast `BOOT_COMPLETED`:
+For example, the command of issuing a broadcast intent with `BOOT_COMPLETED` to all of the components is as following:
 
 ```sh
 adb shell am broadcast -a android.intent.action.BOOT_COMPLETED
 ```
 
-As another example, only to `org.mazhuang.boottimemeasure / .BootCompletedReceiver` broadcast` BOOT_COMPLETED`:
+As another example of issuing a broadcast intent with `BOOT_COMPLETED` only to `org.mazhuang.boottimemeasure / .BootCompletedReceiver` is as following:
 
 ```sh
 adb shell am broadcast -a android.intent.action.BOOT_COMPLETED -n org.mazhuang.boottimemeasure/.BootCompletedReceiver
 ```
 
-Such usage is very practical in the test, such as a broadcast scenes difficult to manufacture, can be considered to transmit broadcast in this way.
+The command of issuing a broadcast intent is very useful in the test, especially when a broatcast intent is hard to generate normally, it would be of great use to send the broadcast intent by the command.
 
-Both predefined broadcast transmission system can also send a custom broadcast. The following is part of the normal pre-defined radio and Trigger timing:
+Both system predefined and custom broadcast intent are able to be sent. The following is part of the system predefined broadcast intents and the triggers:
 
-| Action                                          | trigger timing                                                     |
+| Action                                          | Trigger                                                     |
 |-------------------------------------------------|--------------------------------------------------------------------|
-| android.net.conn.CONNECTIVITY_CHANGE            | Fi changes                                                         |
-| android.intent.action.SCREEN_ON                 | screen lit                                                         |
+| android.net.conn.CONNECTIVITY_CHANGE            | network connectivity changes                                                         |
+| android.intent.action.SCREEN_ON                 | screen on                                                         |
 | android.intent.action.SCREEN_OFF                | screen off                                                         |
-| android.intent.action.BATTERY_LOW               | low battery, low battery prompt box will pop up                    |
-| android.intent.action.BATTERY_OKAY              | electricity restored                                               |
-| android.intent.action.BOOT_COMPLETED            | equipment Booted                                                   |
-| android.intent.action.DEVICE_STORAGE_LOW        | storage space is running low                                       |
-| android.intent.action.DEVICE_STORAGE_OK         | storage space recovery                                             |
-| android.intent.action.PACKAGE_ADDED             | install a new application                                          |
-| android.net.wifi.STATE_CHANGE                   | WiFi connection status change                                      |
-| android.net.wifi.WIFI_STATE_CHANGED             | WiFi state to the On / Off / Starting up / shutting down / Unknown |
-| android.intent.action.BATTERY_CHANGED           | battery level changes                                              |
-| android.intent.action.INPUT_METHOD_CHANGED      | system input method changes                                        |
-| android.intent.action.ACTION_POWER_CONNECTED    | external power connector                                           |
-| android.intent.action.ACTION_POWER_DISCONNECTED | disconnected from external power                                   |
-| android.intent.action.DREAMING_STARTED          | system began Sleep                                                 |
-| android.intent.action.DREAMING_STOPPED          | system stops Sleep                                                 |
-| android.intent.action.WALLPAPER_CHANGED         | wallpaper changes                                                  |
-| android.intent.action.HEADSET_PLUG              | insert earphone                                                    |
-| android.intent.action.MEDIA_UNMOUNTED           | unload external media                                              |
-| android.intent.action.MEDIA_MOUNTED             | mount external media                                               |
-| android.os.action.POWER_SAVE_MODE_CHANGED       | power-saving mode is turned on                                     |
+| android.intent.action.BATTERY_LOW               | low battery, corresponding to the "Low battery warning" system dialog                    |
+| android.intent.action.BATTERY_OKAY              | the battery is now okay after being low                                               |
+| android.intent.action.BOOT_COMPLETED            | device boot finished                                                   |
+| android.intent.action.DEVICE_STORAGE_LOW        | low memory condition on the device                                       |
+| android.intent.action.DEVICE_STORAGE_OK         | low memory condition on the device no longer exists                                           |
+| android.intent.action.PACKAGE_ADDED             | a new application has been installed                                       |
+| android.net.wifi.STATE_CHANGE                   | WiFi connection status changed                                      |
+| android.net.wifi.WIFI_STATE_CHANGED             | Wi-Fi has been enabled, disabled, enabling, disabling, or unknown |
+| android.intent.action.BATTERY_CHANGED           | battery level changed                                              |
+| android.intent.action.INPUT_METHOD_CHANGED      | system input method changed                                        |
+| android.intent.action.ACTION_POWER_CONNECTED    | external power connected to the device                                           |
+| android.intent.action.ACTION_POWER_DISCONNECTED | external power removed from the device                                   |
+| android.intent.action.DREAMING_STARTED          | system starts dreaming                                                 |
+| android.intent.action.DREAMING_STOPPED          | system stops dreaming                                                 |
+| android.intent.action.WALLPAPER_CHANGED         | wallpaper changeed                                                  |
+| android.intent.action.HEADSET_PLUG              | wired headset plugged in or unplugged                                                    |
+| android.intent.action.MEDIA_UNMOUNTED           | external media is present, but not mounted at its mount point                                              |
+| android.intent.action.MEDIA_MOUNTED             | external media is present and mounted at its mount point                                               |
+| android.os.action.POWER_SAVE_MODE_CHANGED       | power-saving mode changed                                   |
 
-* (Above broadcast can be used to trigger adb) *
+*(Above broadcast intents are all available to be sent via adb commands)*
 
-### Forcibly stop the application
+### Force stop an application
 
-command:
+The syntax is:
 
 ```sh
 adb shell am force-stop <packagename>
 ```
 
-Command Example:
+For example:
 
 ```sh
 adb shell am force-stop com.qihoo360.mobilesafe
 ```
 
-Stop all processes and services represents 360 security guards.
+The command above means stopping all processes and services related to the package name `com.qihoo360.mobilesafe`.
 
 ## File Management
 
-### Copy files to the computer equipment in
+### Copy files from a device to a computer
 
 command:
 
 ```sh
-adb pull <file path on device> [directory on the computer]
+adb pull <remote> [local]
 ```
+> - `remote`: file path on device
+> - `local`: directory on computer
 
-The parameters on which the directory `` computer can be omitted, it defaults to the current directory.
+The `local` parameter is optional, the default value is current directory.
 
-example:
+For example:
 
 ```sh
 adb pull /sdcard/sr.mp4 ~/tmp/
 ```
 
-* Tips: * file path on the device may need root privileges to access, if your equipment has been root, you can use the `adb shell` and` su` command to obtain root privileges adb shell Lane after the first `cp / path / on / device / sdcard / filename` copy files to sdcard, then `adb pull / sdcard / filename / path / on / pc`.
+- *Tips*: The file from device may be not readable without root permission, you need to make sure your device is rooted and then use `adb shell` and `su` commands to gain the root permission in the `adb shell` environment, after that you can use `cp /path/on/device /sdcard/filename` to copy the target file from those directories which require root permission to a public directory, and finaly you can use `adb pull /sdcard/filename /path/on/pc` normally as mentioned above after exiting the `adb shell` environment.
 
-### Copy computer files to the device
+### Copy files from a computer to a device
 
 command:
 
 ```sh
-adb push <file path on your computer> <equipment in the catalog>
+adb push <local> <remote>
 ```
+> - `local`: file path on computer
+> - `remote`: directory on device
 
-example:
+For example:
 
 ```sh
 adb push ~/sr.mp4 /sdcard/
 ```
 
-* Tips: * file on the path of ordinary privileges may not be directly written to the device if you have root too, can be `adb push / path / on / pc / sdcard / filename`, and then` `adb shell` after su` obtain root privileges adb shell inside, `cp / sdcard / filename / path / on / device`.
+- *Tips*: The directory on device may be not writable without root permission, you need to make sure your device is rooted and then use `adb push /path/on/pc /sdcard/filename` firstly, and use `adb shell` and `su` to gain the root permission in the `adb shell` environment, and finaly use `cp /sdcard/filename /path/on/device` to copy the file to the target directory.
 
 ## Analog Keys / inputs
 
@@ -1216,13 +1238,13 @@ By kernel log, we can do some things, such as a measure of the kernel boot time,
 
 ### Model
 
-command:
+Command:
 
 ```sh
 adb shell getprop ro.product.model
 ```
 
-Example output:
+Sample output:
 
 ```sh
 Nexus 5
@@ -1230,13 +1252,13 @@ Nexus 5
 
 ### Battery Status
 
-command:
+Command:
 
 ```sh
 adb shell dumpsys battery
 ```
 
-Input Example:
+Sample output:
 
 ```sh
 Current Battery Service state:
@@ -1253,67 +1275,67 @@ Current Battery Service state:
   technology: Li-poly
 ```
 
-`Scale` which represents the maximum power,` level` represents the current power. The above output represents 44% of remaining power.
+`Scale` means the maximum value of `level`, and `level` means the current battery level. The output above means there is 44% of battery left of the device.
 
 ### Screen Resolution
 
-command:
+Command:
 
 ```sh
 adb shell wm size
 ```
 
-Example output:
+Sample output:
 
 ```sh
 Physical size: 1080x1920
 ```
 
-The device's screen resolution is 1080px * 1920px.
+The above output means the device's screen resolution is 1080px * 1920px.
 
-If resolution has been changed by command, output may be:
+If resolution has been changed by command, the output would be like this:
 
 ```sh
 Physical size: 1080x1920
 Override size: 480x1024
 ```
 
-It says that screen's original resolution is 1080px * 1920px, currently is 480px * 1024px.
+It means the original resolution of the screen is 1080px * 1920px, and currently it is 480px * 1024px.
 
 ### Screen density
 
-command:
+Command:
 
 ```sh
 adb shell wm density
 ```
 
-Example output:
+Sample output:
 
 ```sh
 Physical density: 420
 ```
 
-The device screen density of 420dpi.
+The output shows the density of the device is 420dpi.
 
-If screen density has been changed by command, output may be:
+If screen density has been changed by command, the output would be like this:
 
 ```sh
 Physical density: 480
 Override density: 160
 ```
 
-It says that originla screen density is 480dpi, currently is 160dpi.
+It means the original density of the screen is 480dpi, and currently it is 160dpi.
 
 ### Display Parameters
 
-command:
+Command:
 
 ```sh
 adb shell dumpsys window displays
 ```
 
-Example output:
+Sample output:
 
 ```sh
 WINDOW MANAGER DISPLAY CONTENTS (dumpsys window displays)
@@ -1322,17 +1344,17 @@ WINDOW MANAGER DISPLAY CONTENTS (dumpsys window displays)
     deferred=false layoutNeeded=false
 ```
 
-Where `mDisplayId` to display numbers,` init` initial resolution and screen density, `app` height than` init` in the smaller, bottom of the screen indicates the virtual keys and a height of 1920 - 1794 = 126px co 42dp .
+The `mDisplayId` stands for the number of the display screen, `init` shows the initial resolution and density of the screen, the height in `app` is smaller than that in `init`, which means the device has a virtual navigation bar with a height: `1920 - 1794 = 126px (42dp)`.
 
 ### android\_id
 
-command:
+Command:
 
 ```sh
 adb shell settings get secure android_id
 ```
 
-Example output:
+Sample output:
 
 ```sh
 51b6be48bac8c569
@@ -1340,13 +1362,13 @@ Example output:
 
 ### IMEI
 
-In Android 4.4 and below versions are available through the following command IMEI:
+For Android 4.4 and the belows, the IMEI viewing command is like this:
 
 ```sh
 adb shell dumpsys iphonesubinfo
 ```
 
-Example output:
+Sample output:
 
 ```sh
 Phone Subscriber Info:
@@ -1354,9 +1376,9 @@ Phone Subscriber Info:
   Device ID = 860955027785041
 ```
 
-`Device ID` which is IMEI.
+`Device ID` stands for IMEI.
 
-In Android 5.0 and above in the command output is empty, was acquired by other means (requires root privileges):
+For Android 5.0 and the aboves, the command used to view IMEI above is not working which always comes out nothing, the alternative is like this(requires root privileges):
 
 ```sh
 adb shell
@@ -1364,7 +1386,7 @@ su
 service call iphonesubinfo 1
 ```
 
-Example output:
+Sample output:
 
 ```sh
 Result: Parcel(
@@ -1373,19 +1395,19 @@ Result: Parcel(
   0x00000020: 00340030 00000031                   '0.4.1...        ')
 ```
 
-The effective content is extracted from the inside of the IMEI, such as here is `860955027785041`.
+After extracting the data the normal IMEI will show, such as the IMEI above is `860955027785041`.
 
 Reference: [adb shell dumpsys iphonesubinfo not working since Android 5.0 Lollipop](http://stackoverflow.com/questions/27002663/adb-shell-dumpsys-iphonesubinfo-not-working-since-android-5-0-lollipop)
 
 ### Android system version
 
-command:
+Command:
 
 ```sh
 adb shell getprop ro.build.version.release
 ```
 
-Example output:
+Sample output:
 
 ```sh
 5.0.2
@@ -1393,30 +1415,30 @@ Example output:
 
 ### IP address
 
-Every time you want to know the IP address of the device had the "Setting" - "About phone" - "state information" - "IP address" annoying, right? You can easily see via adb.
+Are you getting bored for pressing "Setting" - "About phone" - "state information" - "IP address" to get the IP address of the device? You can make it easily via adb command:
 
-command:
+Command:
 
 ```sh
 adb shell ifconfig | grep Mask
 ```
 
-Example output:
+Sample output:
 
 ```sh
 inet addr:10.130.245.230  Mask:255.255.255.252
 inet addr:127.0.0.1  Mask:255.0.0.0
 ```
 
-So it is `10.130.245.230` device IP address.
+The IP address of the device is `10.130.245.230`.
 
-On some devices this command no output, if the device is attached to WiFi, you can use the following command to view the LAN IP:
+The above command may result in an empty result on some devices if they are connected via WIFI, then you can use the following command to view the LAN IP:
 
 ```sh
 adb shell ifconfig wlan0
 ```
 
-Example output:
+Sample output:
 
 ```sh
 wlan0: ip 10.129.160.99 mask 255.255.240.0 flags [up broadcast running multicast]
@@ -1435,13 +1457,13 @@ wlan0     Link encap:UNSPEC
           RX bytes:116266821 TX bytes:8311736
 ```
 
-If the above command still can not get the desired information, then you can try the following command (part of the system version is available):
+If the two commands above still don't get the desired information, then you can try the following command (available in some system):
 
 ```sh
 adb shell netcfg
 ```
 
-Example output:
+Sample output:
 
 ```sh
 wlan0    UP                               10.129.160.99/20  0x00001043 f8:a9:d0:17:42:4d
@@ -1467,33 +1489,33 @@ rev_rmnet0 DOWN                                   0.0.0.0/0   0x00001002 fe:65:d
 rev_rmnet1 DOWN                                   0.0.0.0/0   0x00001002 da:d8:e8:4f:2e:fe
 ```
 
-You can see the network connection name, enabled, IP address and Mac address and other information.
+It shows the network connection name, connection enable status, IP address, Mac address and etc.
 
 ### Mac Address
 
-command:
+Command:
 
 ```sh
 adb shell cat /sys/class/net/wlan0/address
 ```
 
-Example output:
+Sample output:
 
 ```sh
 f8:a9:d0:17:42:4d
 ```
 
-This view is LAN Mac address, or other information connected to the mobile network can `adb shell netcfg` command" IP address "mentioned in the previous section to see through.
+The output above is the Mac address of LAN, if you want other infomation of connection, the command `adb shell netcfg` mentioned in the section **IP address** would be helpful.
 
 ### CPU Information
 
-command:
+Command:
 
 ```sh
 adb shell cat /proc/cpuinfo
 ```
 
-Example output:
+Sample output:
 
 ```sh
 Processor       : ARMv7 Processor rev 0 (v7l)
@@ -1521,17 +1543,17 @@ Revision        : 000b
 Serial          : 0000000000000000
 ```
 
-This is the CPU information Nexus 5, we can see from the output hardware used is `Qualcomm MSM 8974`, processor number is 0-3, so it is a quad-core, the use of architecture is` ARMv7 Processor rev 0 ( v71) `.
+This is the CPU information of Nexus 5, we can find from the output that the hardware is `Qualcomm MSM 8974`, and the processor number is from 0 to 3, which means the cpu is a quad-core, then from the `Processor` we can find the architecture of the cpu is` ARMv7 Processor rev 0 ( v71) `.
 
 ### Memory Information
 
-command:
+Command:
 
 ```sh
 adb shell cat /proc/meminfo
 ```
 
-Example output:
+Sample output:
 
 ```sh
 MemTotal:        1027424 kB
@@ -1573,7 +1595,7 @@ VmallocUsed:       61004 kB
 VmallocChunk:     209668 kB
 ```
 
-Wherein, `MemTotal` is the total memory device,` MemFree` is currently free memory.
+`MemTotal` means the total memory of the device, and `MemFree` means the current free memory.
 
 ### More hardware and system properties
 
@@ -1583,9 +1605,9 @@ More hardware devices and system properties can be obtained by the following com
 adb shell cat /system/build.prop
 ```
 
-This will output a lot of information, including the previously mentioned several sections of "model" and "version of Android," and so on.
+This will output a lot of information, including "model" and "Android system version" and other infomation which are mentioned in previous several sections.
 
-In output also includes some other useful information, they can also be `adb shell getprop <attribute name>` command alone, part of the property include the following:
+In output also includes some other useful information, which can also be obtained individually via the command `adb shell getprop <attribute name>`:
 
 | Attribute name                  | Meaning                       |
 |---------------------------------|-------------------------------|
@@ -1596,11 +1618,22 @@ In output also includes some other useful information, they can also be `adb she
 | ro.product.brand                | Brands                        |
 | ro.product.name                 | device name                   |
 | ro.product.board                | Processor Model               |
-| ro.product.cpu.abilist          | CPU support list abi          |
-| persist.sys.isUsbOtgEnabled     | supports OTG                  |
-| dalvik.vm.heapsize              | each application's memory cap |
+| ro.product.cpu.abilist          | CPU supported abi list[Ref 1]   |
+| persist.sys.isUsbOtgEnabled     | OTG supports                  |
+| dalvik.vm.heapsize              | limit on heap size for each app |
 | ro.sf.lcd_density               | screen density                |
 
+*Ref 1*:
+The property of abi list may be changed in some custom ROMs, if it can't be obtained via `ro.product.cpu.abilist`, you can try this command:
+```
+adb shell cat /system/build.prop | grep ro.product.cpu.abi
+```
+
+Sample output:
+```
+ro.product.cpu.abi=armeabi-v7a
+ro.product.cpu.abi2=armeabi
+```
 ## Modify Settings
 
 **Notice:** Display may not normal after reset settings, you can use command `adb reboot` to reboot device, or reboot it maually.
@@ -2111,7 +2144,7 @@ The following is a brief description of other commonly used commands, has previo
 
 ### Start adb server failure
 
-**Error message** 
+**Error message**
 
 ```sh
 error: protocol fault (couldn't read status): No error
@@ -2147,15 +2180,9 @@ Then start adb no problem.
 
 ## Acknowledgements
 
-Thanks for sharing with friends and selfless supplement.
+Thanks friends for theirs selfless sharing and supplement. Names listed in no particular order.
 
-* [zxning](https://github.com/zxning)
-* [linhua55](https://github.com/linhua55)
-* [codeskyblue](https://github.com/codeskyblue)
-* [seasonyuu](https://github.com/seasonyuu)
-* [fan123199](https://github.com/fan123199)
-* [zhEdward](https://github.com/zhEdward)
-* [0x8BADFOOD](https://github.com/0x8BADFOOD)
+[zxning](https://github.com/zxning), [linhua55](https://github.com/linhua55), [codeskyblue](https://github.com/codeskyblue), [seasonyuu](https://github.com/seasonyuu), [fan123199](https://github.com/fan123199), [zhEdward](https://github.com/zhEdward), [0x8BADFOOD](https://github.com/0x8BADFOOD), [keith666666](https://github.com/keith666666).
 
 ## Reference Links
 
